@@ -1,0 +1,216 @@
+import os
+import json
+import ast
+filename = 'student.txt'
+def main():
+    while True:
+        menum()
+        choice = int(input('请选择'))
+        if choice in [0,1,2,3,4,5,6,7]:
+            if choice ==0:
+                answer = input('您确定要退出系统吗？y/n')
+                if answer == 'y' or answer == 'Y':
+                    print('系统即将退出 ')
+                    break # 退出系统
+                else:
+                    continue
+            elif choice ==1:
+                insert()
+            elif choice == 2:
+                search()
+            elif choice == 3:
+                delete()
+            elif choice == 4:
+                modify()
+            elif choice == 5:
+                sort()
+            elif choice == 6:
+                total()
+            elif choice == 7:
+                show()
+
+def menum():
+    print('================学生信息管理系统================')
+    print('==================功能菜单=====================')
+    print('\t\t\t\t\t\t\t1.录入学生信息')
+    print('\t\t\t\t\t\t\t2.查找学生信息')
+    print('\t\t\t\t\t\t\t3.删除学生信息')
+    print('\t\t\t\t\t\t\t4.修改学生信息')
+    print('\t\t\t\t\t\t\t5.排序')
+    print('\t\t\t\t\t\t\t6.统计学生总数')
+    print('\t\t\t\t\t\t\t7.显示所有学生信息')
+    print('\t\t\t\t\t\t\t0.退出')
+
+def insert():
+    stu_list = [] # 用于存储学生信息
+    while True:
+        id = input('请输入学生学号：')
+        if not id: #如果输入为空的话退出循环
+            break
+        name = input('请输入学生姓名：')
+        if not name:
+            break
+        try:
+            java = int(input('请输入java成绩：')) # 成绩部分需要将字符串转换成int
+            python = int(input('请输入python成绩：'))
+            c = int(input('请输入C语言成绩：'))
+            linux = int(input('请输入Linux成绩：'))
+        except:
+            print('输入无效，不是整数类型，请重新输入')
+            continue
+        # 将学生成绩保存到字典当中
+        student = {'id':id,'name':name,'java':java,'python':python,'c':c,'linux':linux}
+        #将学生信息添加到列表当中
+        stu_list.append(student)
+        answer1 = input("是否继续添加学生信息 y/n")
+        if answer1 =='y' or answer1 =='Y':
+            continue
+        else:
+            break
+
+    save(stu_list)
+    print('学生信息录入完毕')
+
+def save(lst):
+    try:
+        stu_txt = open(filename,'a',encoding='utf-8')
+    except:
+        stu_txt = open(filename,'w',encoding='utf-8')
+    for item in lst:
+        stu_txt.write(str(item) + '\n')
+    stu_txt.close()
+
+def search():
+    student_query = []
+    while True:
+        id = ''
+        name = ''
+        if os.path.exists(filename):
+            mode = input('按id查找请输入1，按姓名查找请输入2')
+            if mode =='1': #输入的是字符串类型需要加单引号
+                id = input('请输入学生id')
+            elif  mode =='2':
+                name = input('请输入学生姓名')
+            else:
+                print('输入有误请重新输入')
+                search()
+            with open(filename,'r',encoding='utf-8') as rfile:
+                student = rfile.readlines()
+                for item in student:
+                    d = dict(eval(item))
+                    if id!='':
+                        if d['id'] == d:
+                            student_query.append(d)
+                    elif name != '':
+                        if d['name'] == name:
+                            student_query.append(d)
+            show_student(student_query)
+            # 显示之后清空列表
+            student_query.clear()
+            answer = input('是否继续查询？y/n')
+            if answer == 'y' or answer == 'Y':
+                continue
+            else:
+                break
+        else:
+            print('暂未保存学生信息')
+            return
+
+def delete():
+    while True:
+        student_ID = int(input('请输入学生ID:\n'))
+        if student_ID != '':
+            if os.path.exists(filename):#判断磁盘中文件是否存在
+                with open(filename,'r',encoding='utf-8') as file:
+                    student_old = file.readlines() #按行读取
+
+            else:
+                student_old = []
+            flag = True  #标记是否删除
+            if student_old: #判断列表是否为空，此处判断的是布尔值
+                with open(filename,'w',encoding='utf-8') as f:
+                    d = {}
+                    for item in student_old:
+                        # todo: 此处有些错误需要修改
+                        #d = dict(eval(item)) # 将读取出来的字符串转化为字典的形式
+                        d = dict(item)
+                        if d['id'] != student_ID:
+                            f.write(str(d)+'\n')
+                        else:
+                            flag = True
+                    if flag:
+                        print(f'id为{student_ID}的学生信息将被删除')
+                    else:
+                        print(f'没有找到id为{student_ID}的学生信息')
+            else:
+                print('无学生信息') #此处指磁盘中并没有学生信息
+                break
+            show()# 删除之后重新显示学生信息
+            answer = input('是否继续删除？y/n')
+            if answer == 'y' or answer=='Y':
+                continue
+            else:
+                break
+
+
+
+def modify():
+    show()
+    if os.path.exists(filename):#判断磁盘中文件是否存在
+        with open(filename,'r',encoding='utf-8') as file:
+             dic = eval(file.read()) #按行读取
+
+    else:
+        return
+    student_id = input('请输入要修改的学员信息ID')
+    # print(student_old)
+    # with open(filename,'w',encoding='utf-8') as wfile:
+    #     for item in student_old:
+    #         print(item)
+    #     print(item)
+
+
+def show_student(lst):
+    # 格式化字符串
+    format_tile = '{:^6}\t{:^12}\t{:^8}\t{:^10}\t{:^10}\t{:^8}'
+    print(format_tile.format('id','姓名','java','python','linux','c','总成绩'))
+    format_data = '{:^6}\t{:^12}\t{:^8}\t{:^10}\t{:^10}\t{:^8}'
+    for item in lst:
+        print(format_data.format(item.get('id'),
+                                 item.get('name'),
+                                 item.get('java'),
+                                 item.get('python'),
+                                 item.get('c'),
+                                 item.get('linux'),
+                                 int(item.get('java'))+int(item.get('python'))+int(item.get('c'))+int(item.get('linux'))
+                                 ))
+
+
+def sort():
+    pass
+
+def total():
+    if os.path.exists(filename):
+        with open(filename,'r',encoding='utf-8') as f:
+            students = f.readlines()
+            if students:
+                print(f'一共有{len(students)}名学生')
+            else:
+                print('还没有录入学生信息')
+    else:
+        print('暂未保存数据信息')
+
+def show():
+    student_lst = []
+    if os.path.exists(filename):
+        with open(filename,'r',encoding='utf-8') as f:
+            students = f.readlines()
+            for item in students:
+                student_lst.append(eval(item))
+            if student_lst:
+                show_student(student_lst)
+    else:
+        print('暂未保存过数据！！！')
+
+if __name__ == '__main__':
+    main()
